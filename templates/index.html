@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Texas Hold'em Web Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #game { margin: 20px; }
+    .button { padding: 10px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Texas Hold'em</h1>
+  <div id="game">
+    <div id="status">Waiting for game to start...</div>
+    <pre id="game-state"></pre>
+    <button class="button" onclick="startGame()">Start New Hand</button>
+    <button class="button" onclick="sendAction('call')">Call/Check</button>
+    <button class="button" onclick="sendAction('fold')">Fold</button>
+    <button class="button" onclick="sendAction('all-in')">All-In</button>
+    <button class="button" onclick="betAction()">Bet/Raise</button>
+  </div>
+
+  <script>
+    function startGame() {
+      fetch('/api/start', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => updateGameState(data.game_state))
+        .catch(error => console.error('Error:', error));
+    }
+
+    function sendAction(action, amount=0) {
+      fetch('/api/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action, amount: amount })
+      })
+      .then(response => response.json())
+      .then(data => updateGameState(data.game_state))
+      .catch(error => console.error('Error:', error));
+    }
+
+    function betAction() {
+      let amount = prompt("Enter bet amount:");
+      if (amount) {
+        sendAction('bet', parseInt(amount));
+      }
+    }
+
+    function updateGameState(state) {
+      // Update the displayed game state.
+      document.getElementById('game-state').innerText = JSON.stringify(state, null, 2);
+      document.getElementById('status').innerText = "Game updated.";
+    }
+  </script>
+</body>
+</html>
